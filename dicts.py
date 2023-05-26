@@ -124,7 +124,12 @@ def get_brand_id():
 
 
 def get_color():
-    data = ['white','black','gray','silver', 'blue', 'red', 'green', 'gold', 'beige', 'other']
+    data = ['white', 'black', 'gray', 'silver', 'blue', 'red', 'green', 'gold', 'beige', 'other']
+    return data
+
+
+def get_chassis():
+    data = ['cabriolet', 'sedan', 'coupe', 'suv', 'hatchback', 'estate-car', 'off-road-vehicle', 'mvp']
     return data
 
 
