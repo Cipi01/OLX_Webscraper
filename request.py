@@ -14,13 +14,13 @@ color_list = get_color()
 chassis_list = get_chassis()
 
 brd_reg_plus_dict = {}
-brd_plus_list = []
 color_plus_list = []
 color_plus_brand_list = []
 
 reg_plus_list = []
 val_reg_for_plus = None
 
+brd_color_plus_dict = {}
 
 def initial_request():
     for page in range(1, 100):
@@ -184,12 +184,16 @@ def direct_brand_request(offset=0):
                 break
     return brand_list_rmn
 
+
 # REGIONS
 def region_request():
     print("begin counties")
     for value_region1 in region_id_list:
         for page in range(1, 100):
-            offset = 40 * page
+            if page == 1:
+                offset = 0
+            else:
+                offset += 40
 
             querystring = {"offset": f"{offset}", "limit": "40", "category_id": "84", "region_id": f"{value_region1}",
                            "filter_refiners": "spell_checker",
@@ -281,10 +285,12 @@ def region_request():
 
 
 # BRANDS TEMPORARY FIX
+# TODO: Adjust b-r and c-b-r accordingly
 def brand_region_request():
-    # global val_reg_for_plus, brd_plus_list
+
     print("Begin brands")
     for val_region in region_rmn_list:
+        brd_plus_list = []
         for val_brand1 in brand_rmn_list:
             for page in range(1, 100):
                 if page == 1:
@@ -304,13 +310,16 @@ def brand_region_request():
                 data_dict_brand = response.json()
                 try:
                     if data_dict_brand['metadata']['total_elements'] == 1000:
-                        print(f"NOT ALL VISIBLE---{get_keys_from_value(brand_id, val_brand1)}---"
-                              f"{get_keys_from_value(region_id, val_region)}---")
+                        if val_reg_for_plus != val_region:
+                            brd_plus_list = []
+                            val_reg_for_plus = val_region
+
+                        brd_plus_list.append(val_brand1)
 
                         break
-
-                    elif 0 < data_dict_brand['metadata']['total_elements'] < 1000:
-
+                    elif data_dict_brand['metadata']['total_elements'] == 0:
+                        break
+                    else:
                         if not data_dict_brand['data']:
                             print(f"FINISHED---{get_keys_from_value(brand_id, val_brand1)}---"
                                   f"{get_keys_from_value(region_id, val_region)}---")
@@ -319,6 +328,7 @@ def brand_region_request():
                         for i in data_dict_brand['data']:
 
                             title = i['title']
+
                             brand_list = get_auto_brands()
                             brand = 'n/a'
                             for brd in brand_list:
@@ -362,15 +372,12 @@ def brand_region_request():
                                 i['location']['region']['name'],
                                 i['location']['city']['name'] if 'city' in i['location'] else 'n/a'
                             ])
-                            columns = ['Brand', 'Model', 'Titlu', 'Pret', 'Rulaj', 'AnFabr', 'Stare',
-                                       'Cm3', 'URL', 'DataCreeare', 'Judet', 'Localitate']
-                            df = pd.DataFrame(data_list, columns=columns)
-                            df.to_excel('auto_data.xlsx', index=False)
-                    else:
-                        print("NO VALUE")
-                        break
-                except KeyError:
+
+                    brd_reg_plus_dict[val_region] = brd_plus_list
+                except KeyError or IndexError:
                     break
+
+    return brd_reg_plus_dict
 
 
 # COLORS
@@ -399,22 +406,26 @@ def color_brand_region_request():
                     }
 
                     response = requests.request("GET", url, headers=headers, data=payload)
+                    data_color = response.json()
+
                     try:
-                        data_color = response.json()
                         if data_color['metadata']['total_elements'] == 1000:
-                            print("---NOT OK---")
-                            color_plus_brand_list.append(val_brd)
+                            if val_rmn_brd != val_brd:
+                                color_plus_list = []  # Empty the brand list when val_region changes
+                                val_rmn_brd = val_brd
+
                             color_plus_list.append(color)
                             break
                         elif data_color['metadata']['total_elements'] == 0:
-                            print("---NO VALUE---")
+
                             break
                         else:
                             print("---DO SOMETHING---")
                             break
 
+                        brd_color_plus_dict[val_brd] = color_plus_list
 
-                    except IndexError:
+                    except IndexError or KeyError:
                         break
 
 
@@ -459,14 +470,14 @@ def chassis_color_brand_region_request():
                         break
 
 
-
 if __name__ == '__main__':
     initial_request()
     brand_rmn_list = direct_brand_request()
     region_rmn_list = region_request()
-
+    b_r_rmn_dict = brand_region_request()
     columns = ['Brand', 'Model', 'Titlu', 'Pret', 'Rulaj', 'AnFabr', 'Stare',
                'Cm3', 'URL', 'DataCreeare', 'Judet', 'Localitate']
     df = pd.DataFrame(data_list, columns=columns)
+    df = df.drop_duplicates()
+    df = df.applymap(lambda x: x.encode('unicode_escape').decode('utf-8') if isinstance(x, str) else x)
     df.to_excel('auto_data.xlsx', index=False)
-
