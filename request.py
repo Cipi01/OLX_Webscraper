@@ -14,13 +14,13 @@ color_list = get_color()
 chassis_list = get_chassis()
 
 brd_reg_plus_dict = {}
-color_plus_list = []
 color_plus_brand_list = []
 
 reg_plus_list = []
 val_reg_for_plus = None
-
+val_rmn_brd = None
 brd_color_plus_dict = {}
+
 
 def initial_request():
     for page in range(1, 100):
@@ -285,9 +285,8 @@ def region_request():
 
 
 # BRANDS TEMPORARY FIX
-# TODO: Adjust b-r and c-b-r accordingly
 def brand_region_request():
-
+    global val_reg_for_plus
     print("Begin brands")
     for val_region in region_rmn_list:
         brd_plus_list = []
@@ -382,7 +381,8 @@ def brand_region_request():
 
 # COLORS
 def color_brand_region_request():
-    brd_reg_plus_dict = {'46': ['182', '183', '742', '189', '195', '198', '200', '203', '207'], '2': ['207']}
+    cbr_brd_rmn = []
+    cbr_color_rmn = []
     print("Begin colors")
     reg_rmn1 = brd_reg_plus_dict.keys()
     for val_reg in reg_rmn1:
@@ -410,29 +410,77 @@ def color_brand_region_request():
 
                     try:
                         if data_color['metadata']['total_elements'] == 1000:
-                            if val_rmn_brd != val_brd:
-                                color_plus_list = []  # Empty the brand list when val_region changes
-                                val_rmn_brd = val_brd
-
-                            color_plus_list.append(color)
+                            cbr_brd_rmn.append(val_brd)
+                            cbr_color_rmn.append(color)
                             break
+
                         elif data_color['metadata']['total_elements'] == 0:
 
                             break
-                        else:
-                            print("---DO SOMETHING---")
-                            break
 
-                        brd_color_plus_dict[val_brd] = color_plus_list
+                        else:
+                            if not data_color['data']:
+                                print(f"---DID SOMETHING---{get_keys_from_value(region_id, val_reg)}--"
+                                      f"-{get_keys_from_value(brand_id, val_brd)}---{color}")
+                                break
+
+                            for i in data_color['data']:
+
+                                title = i['title']
+
+                                brand_list = get_auto_brands()
+                                brand = 'n/a'
+                                for brd in brand_list:
+                                    if brd.lower() in title.lower():
+                                        brand = brd
+                                        break
+
+                                params = i.get('params', [])
+                                for param in params:
+                                    if param['key'] == 'price':
+                                        if param['value']['currency'] == 'EUR':
+                                            price = param['value']['value']
+                                        else:
+                                            price = round(param['value']['value'] * 0.20)
+                                model = next((param['value']['label'] for param in params if param['key'] == 'model'),
+                                             'n/a')
+                                year = next((int(param['value']['key']) for param in params if param['key'] == 'year'),
+                                            'n/a')
+                                enginesize = next(
+                                    (int(param['value']['key']) for param in params if param['key'] == 'enginesize'),
+                                    'n/a')
+                                km = next(
+                                    (int(param['value']['key']) for param in params if param['key'] == 'rulaj_pana'),
+                                    'n/a')
+                                state = next((param['value']['label'] for param in params if param['key'] == 'state'),
+                                             'n/a')
+
+                                created_time = i['created_time'].split('T')
+
+                                data_list.append([
+
+                                    brand,
+                                    model,
+                                    title,
+                                    price,
+                                    km,
+                                    year,
+                                    state,
+                                    enginesize,
+                                    i['url'],
+                                    created_time[0],
+                                    i['location']['region']['name'],
+                                    i['location']['city']['name'] if 'city' in i['location'] else 'n/a'
+                                ])
 
                     except IndexError or KeyError:
                         break
+    print(cbr_brd_rmn, cbr_color_rmn)
+    return cbr_brd_rmn, cbr_color_rmn
 
 
 # CHASSIS
 def chassis_color_brand_region_request():
-    color_plus_brand_list = ['183']
-    color_plus_list = ['black']
     print("begin chassis")
     for val_brand in color_plus_brand_list:
         for val_color in color_plus_list:
@@ -461,12 +509,61 @@ def chassis_color_brand_region_request():
                             print("---NOT OK---")
                             break
                         elif data_chassis['metadata']['total_elements'] == 0:
-                            print("---NO VALUE---")
                             break
                         else:
-                            print("---DO SOMETHING---")
-                            break
-                    except IndexError:
+                            if not data_chassis['data']:
+                                print(
+                                    f"DID SOMETHING---{get_keys_from_value(brand_id, val_brand)}---{val_color}---{val_chas}")
+                                break
+                            for i in data_chassis['data']:
+
+                                title = i['title']
+
+                                brand_list = get_auto_brands()
+                                brand = 'n/a'
+                                for brd in brand_list:
+                                    if brd.lower() in title.lower():
+                                        brand = brd
+                                        break
+
+                                params = i.get('params', [])
+                                for param in params:
+                                    if param['key'] == 'price':
+                                        if param['value']['currency'] == 'EUR':
+                                            price = param['value']['value']
+                                        else:
+                                            price = round(param['value']['value'] * 0.20)
+                                model = next((param['value']['label'] for param in params if param['key'] == 'model'),
+                                             'n/a')
+                                year = next((int(param['value']['key']) for param in params if param['key'] == 'year'),
+                                            'n/a')
+                                enginesize = next(
+                                    (int(param['value']['key']) for param in params if param['key'] == 'enginesize'),
+                                    'n/a')
+                                km = next(
+                                    (int(param['value']['key']) for param in params if param['key'] == 'rulaj_pana'),
+                                    'n/a')
+                                state = next((param['value']['label'] for param in params if param['key'] == 'state'),
+                                             'n/a')
+
+                                created_time = i['created_time'].split('T')
+
+                                data_list.append([
+
+                                    brand,
+                                    model,
+                                    title,
+                                    price,
+                                    km,
+                                    year,
+                                    state,
+                                    enginesize,
+                                    i['url'],
+                                    created_time[0],
+                                    i['location']['region']['name'],
+                                    i['location']['city']['name'] if 'city' in i['location'] else 'n/a'
+                                ])
+                    except IndexError or KeyError:
                         break
 
 
@@ -475,6 +572,9 @@ if __name__ == '__main__':
     brand_rmn_list = direct_brand_request()
     region_rmn_list = region_request()
     b_r_rmn_dict = brand_region_request()
+    color_plus_brand_list, color_plus_list = color_brand_region_request()
+    chassis_color_brand_region_request()
+
     columns = ['Brand', 'Model', 'Titlu', 'Pret', 'Rulaj', 'AnFabr', 'Stare',
                'Cm3', 'URL', 'DataCreeare', 'Judet', 'Localitate']
     df = pd.DataFrame(data_list, columns=columns)

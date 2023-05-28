@@ -55,8 +55,10 @@ def get_brand_id():
         "Aro": '2535',
         "Aston-Martin": '2536',
         "Audi": '182',
+        "Austin": "2538",
         "Bentley": '2539',
         "BMW": '183',
+        "Bugatti": '2540',
         "Buick": '2541',
         "Cadillac": '841',
         "Chevrolet": '184',
@@ -69,6 +71,7 @@ def get_brand_id():
         "Dodge": '770',
         "Ferarri": '2543',
         "Fiat": '188',
+        "Fisker": '2544',
         "Ford": '189',
         "GMC": '2545',
         "Honda": '190',
@@ -113,11 +116,15 @@ def get_brand_id():
         "Suzuki": '205',
         "Tesla": '1638',
         "Tata": '2558',
-        "Tazari": '2559',
+        "Tazzari": '2559',
         "Toyota": '206',
         "Trabant": '2560',
+        "Triumph": '2561',
+        "Vauxhall": '843',
         "Volkswagen": '207',
         "Volvo": '208',
+        "Weismann": '2562',
+        "Lynk&Co": '2773',
         "Alte marci": '209'
     }
     return data
@@ -205,7 +212,7 @@ def get_color():
 
 
 def get_chassis():
-    data = ['cabriolet', 'sedan', 'coupe', 'suv', 'hatchback', 'estate-car', 'off-road-vehicle', 'mvp']
+    data = ['cabriolet', 'sedan', 'coupe', 'pickup', 'suv', 'hatchback', 'minibus', 'estate-car', 'off-road-vehicle', 'mvp']
     return data
 
 
