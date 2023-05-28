@@ -23,6 +23,7 @@ brd_color_plus_dict = {}
 
 
 def initial_request():
+    print("Begin init request")
     for page in range(1, 100):
         offset = 40 * page
 
@@ -57,7 +58,6 @@ def initial_request():
         data_dict = response.json()
         try:
             if data_dict['metadata']['total_elements'] == 1000:
-                print("NOT ALL VISIBLE")
                 break
             else:
                 for i in data_dict['data']:
@@ -76,14 +76,23 @@ def initial_request():
                             if param['value']['currency'] == 'EUR':
                                 price = param['value']['value']
                             else:
-                                price = round(param['value']['value'] / 0.20)
+                                price = round(param['value']['value'] * 0.20)
                     model = next((param['value']['label'] for param in params if param['key'] == 'model'), 'n/a')
                     year = next((int(param['value']['key']) for param in params if param['key'] == 'year'), 'n/a')
-                    enginesize = next((int(param['value']['key']) for param in params if param['key'] == 'enginesize'),
-                                      'n/a')
-                    km = next((int(param['value']['key']) for param in params if param['key'] == 'rulaj_pana'), 'n/a')
+                    enginesize = next(
+                        (int(param['value']['key']) for param in params if param['key'] == 'enginesize'),
+                        'n/a')
+                    km = next((int(param['value']['key']) for param in params if param['key'] == 'rulaj_pana'),
+                              'n/a')
                     state = next((param['value']['label'] for param in params if param['key'] == 'state'), 'n/a')
-
+                    petrol = next((param['value']['label'] for param in params if param['key'] == 'petrol'), 'n/a')
+                    car_body = next((param['value']['label'] for param in params if param['key'] == 'car_body'), 'n/a')
+                    color = next((param['value']['label'] for param in params if param['key'] == 'color'), 'n/a')
+                    door_count = next((param['value']['label'] for param in params if param['key'] == 'door_count'),
+                                      'n/a')
+                    gearbox = next((param['value']['label'] for param in params if param['key'] == 'gearbox'), 'n/a')
+                    steering_wheel = next(
+                        (param['value']['label'] for param in params if param['key'] == 'steering_wheel'), 'n/a')
                     created_time = i['created_time'].split('T')
 
                     data_list.append([
@@ -95,6 +104,12 @@ def initial_request():
                         km,
                         year,
                         state,
+                        petrol,
+                        car_body,
+                        color,
+                        door_count,
+                        gearbox,
+                        steering_wheel,
                         enginesize,
                         i['url'],
                         created_time[0],
@@ -102,7 +117,7 @@ def initial_request():
                         i['location']['city']['name'] if 'city' in i['location'] else 'n/a'
                     ])
 
-        except IndexError:
+        except IndexError or KeyError:
             break
 
 
@@ -136,7 +151,6 @@ def direct_brand_request(offset=0):
                 else:
                     if not data_brand_direct['data']:
                         break
-                    print(f"---DID SOMETHING---{get_keys_from_value(brand_id, val_brand)}--Page {page}")
                     for i in data_brand_direct['data']:
 
                         title = i['title']
@@ -162,7 +176,12 @@ def direct_brand_request(offset=0):
                         km = next((int(param['value']['key']) for param in params if param['key'] == 'rulaj_pana'),
                                   'n/a')
                         state = next((param['value']['label'] for param in params if param['key'] == 'state'), 'n/a')
-
+                        petrol = next((param['value']['label'] for param in params if param['key'] == 'petrol'), 'n/a')
+                        car_body = next((param['value']['label'] for param in params if param['key'] == 'car_body'), 'n/a')
+                        color = next((param['value']['label'] for param in params if param['key'] == 'color'), 'n/a')
+                        door_count = next((param['value']['label'] for param in params if param['key'] == 'door_count'), 'n/a')
+                        gearbox = next((param['value']['label'] for param in params if param['key'] == 'gearbox'), 'n/a')
+                        steering_wheel = next((param['value']['label'] for param in params if param['key'] == 'steering_wheel'), 'n/a')
                         created_time = i['created_time'].split('T')
 
                         data_list.append([
@@ -174,6 +193,12 @@ def direct_brand_request(offset=0):
                             km,
                             year,
                             state,
+                            petrol,
+                            car_body,
+                            color,
+                            door_count,
+                            gearbox,
+                            steering_wheel,
                             enginesize,
                             i['url'],
                             created_time[0],
@@ -234,7 +259,6 @@ def region_request():
                 else:
                     if not data_dict_region['data']:
                         break
-                    print(f"---DID SOMETHING---{get_keys_from_value(region_id, value_region1)}---Page {page}")
 
                     for i in data_dict_region['data']:
 
@@ -261,7 +285,16 @@ def region_request():
                         km = next((int(param['value']['key']) for param in params if param['key'] == 'rulaj_pana'),
                                   'n/a')
                         state = next((param['value']['label'] for param in params if param['key'] == 'state'), 'n/a')
-
+                        petrol = next((param['value']['label'] for param in params if param['key'] == 'petrol'), 'n/a')
+                        car_body = next((param['value']['label'] for param in params if param['key'] == 'car_body'),
+                                        'n/a')
+                        color = next((param['value']['label'] for param in params if param['key'] == 'color'), 'n/a')
+                        door_count = next((param['value']['label'] for param in params if param['key'] == 'door_count'),
+                                          'n/a')
+                        gearbox = next((param['value']['label'] for param in params if param['key'] == 'gearbox'),
+                                       'n/a')
+                        steering_wheel = next(
+                            (param['value']['label'] for param in params if param['key'] == 'steering_wheel'), 'n/a')
                         created_time = i['created_time'].split('T')
 
                         data_list.append([
@@ -273,6 +306,12 @@ def region_request():
                             km,
                             year,
                             state,
+                            petrol,
+                            car_body,
+                            color,
+                            door_count,
+                            gearbox,
+                            steering_wheel,
                             enginesize,
                             i['url'],
                             created_time[0],
@@ -327,7 +366,6 @@ def brand_region_request():
                         for i in data_dict_brand['data']:
 
                             title = i['title']
-
                             brand_list = get_auto_brands()
                             brand = 'n/a'
                             for brd in brand_list:
@@ -353,7 +391,19 @@ def brand_region_request():
                                       'n/a')
                             state = next((param['value']['label'] for param in params if param['key'] == 'state'),
                                          'n/a')
-
+                            petrol = next((param['value']['label'] for param in params if param['key'] == 'petrol'),
+                                          'n/a')
+                            car_body = next((param['value']['label'] for param in params if param['key'] == 'car_body'),
+                                            'n/a')
+                            color = next((param['value']['label'] for param in params if param['key'] == 'color'),
+                                         'n/a')
+                            door_count = next(
+                                (param['value']['label'] for param in params if param['key'] == 'door_count'), 'n/a')
+                            gearbox = next((param['value']['label'] for param in params if param['key'] == 'gearbox'),
+                                           'n/a')
+                            steering_wheel = next(
+                                (param['value']['label'] for param in params if param['key'] == 'steering_wheel'),
+                                'n/a')
                             created_time = i['created_time'].split('T')
 
                             data_list.append([
@@ -365,6 +415,12 @@ def brand_region_request():
                                 km,
                                 year,
                                 state,
+                                petrol,
+                                car_body,
+                                color,
+                                door_count,
+                                gearbox,
+                                steering_wheel,
                                 enginesize,
                                 i['url'],
                                 created_time[0],
@@ -420,14 +476,12 @@ def color_brand_region_request():
 
                         else:
                             if not data_color['data']:
-                                print(f"---DID SOMETHING---{get_keys_from_value(region_id, val_reg)}--"
-                                      f"-{get_keys_from_value(brand_id, val_brd)}---{color}")
+
                                 break
 
                             for i in data_color['data']:
 
                                 title = i['title']
-
                                 brand_list = get_auto_brands()
                                 brand = 'n/a'
                                 for brd in brand_list:
@@ -454,7 +508,20 @@ def color_brand_region_request():
                                     'n/a')
                                 state = next((param['value']['label'] for param in params if param['key'] == 'state'),
                                              'n/a')
-
+                                petrol = next((param['value']['label'] for param in params if param['key'] == 'petrol'),
+                                              'n/a')
+                                car_body = next(
+                                    (param['value']['label'] for param in params if param['key'] == 'car_body'), 'n/a')
+                                color = next((param['value']['label'] for param in params if param['key'] == 'color'),
+                                             'n/a')
+                                door_count = next(
+                                    (param['value']['label'] for param in params if param['key'] == 'door_count'),
+                                    'n/a')
+                                gearbox = next(
+                                    (param['value']['label'] for param in params if param['key'] == 'gearbox'), 'n/a')
+                                steering_wheel = next(
+                                    (param['value']['label'] for param in params if param['key'] == 'steering_wheel'),
+                                    'n/a')
                                 created_time = i['created_time'].split('T')
 
                                 data_list.append([
@@ -466,6 +533,12 @@ def color_brand_region_request():
                                     km,
                                     year,
                                     state,
+                                    petrol,
+                                    car_body,
+                                    color,
+                                    door_count,
+                                    gearbox,
+                                    steering_wheel,
                                     enginesize,
                                     i['url'],
                                     created_time[0],
@@ -512,13 +585,10 @@ def chassis_color_brand_region_request():
                             break
                         else:
                             if not data_chassis['data']:
-                                print(
-                                    f"DID SOMETHING---{get_keys_from_value(brand_id, val_brand)}---{val_color}---{val_chas}")
                                 break
                             for i in data_chassis['data']:
 
                                 title = i['title']
-
                                 brand_list = get_auto_brands()
                                 brand = 'n/a'
                                 for brd in brand_list:
@@ -545,7 +615,20 @@ def chassis_color_brand_region_request():
                                     'n/a')
                                 state = next((param['value']['label'] for param in params if param['key'] == 'state'),
                                              'n/a')
-
+                                petrol = next((param['value']['label'] for param in params if param['key'] == 'petrol'),
+                                              'n/a')
+                                car_body = next(
+                                    (param['value']['label'] for param in params if param['key'] == 'car_body'), 'n/a')
+                                color = next((param['value']['label'] for param in params if param['key'] == 'color'),
+                                             'n/a')
+                                door_count = next(
+                                    (param['value']['label'] for param in params if param['key'] == 'door_count'),
+                                    'n/a')
+                                gearbox = next(
+                                    (param['value']['label'] for param in params if param['key'] == 'gearbox'), 'n/a')
+                                steering_wheel = next(
+                                    (param['value']['label'] for param in params if param['key'] == 'steering_wheel'),
+                                    'n/a')
                                 created_time = i['created_time'].split('T')
 
                                 data_list.append([
@@ -557,6 +640,12 @@ def chassis_color_brand_region_request():
                                     km,
                                     year,
                                     state,
+                                    petrol,
+                                    car_body,
+                                    color,
+                                    door_count,
+                                    gearbox,
+                                    steering_wheel,
                                     enginesize,
                                     i['url'],
                                     created_time[0],
@@ -575,7 +664,7 @@ if __name__ == '__main__':
     color_plus_brand_list, color_plus_list = color_brand_region_request()
     chassis_color_brand_region_request()
 
-    columns = ['Brand', 'Model', 'Titlu', 'Pret', 'Rulaj', 'AnFabr', 'Stare',
+    columns = ['Brand', 'Model', 'Titlu', 'Pret', 'Rulaj', 'AnFabr', 'Stare', 'Combustibil', 'Caroserie', 'Culoare', 'NrUsi', 'Transmisie', 'Volan',
                'Cm3', 'URL', 'DataCreeare', 'Judet', 'Localitate']
     df = pd.DataFrame(data_list, columns=columns)
     df = df.drop_duplicates()
