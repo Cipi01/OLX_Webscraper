@@ -2,6 +2,7 @@ import pandas as pd
 import requests
 from dicts import get_county_ids, get_brand_id, get_color, get_chassis, get_auto_brands
 from funcs import get_keys_from_value
+from datetime import datetime
 
 data_list = []
 
@@ -75,8 +76,11 @@ def initial_request():
                         if param['key'] == 'price':
                             if param['value']['currency'] == 'EUR':
                                 price = param['value']['value']
-                            else:
-                                price = round(param['value']['value'] * 0.20)
+                            elif param['value']['currency'] == 'RON':
+                                if param['value']['converted_value']:
+                                    price = round(float(param['value']['converted_value']))
+                                else:
+                                    price = round(float(param['value']['value'] * 0.20))
                     model = next((param['value']['label'] for param in params if param['key'] == 'model'), 'n/a')
                     year = next((int(param['value']['key']) for param in params if param['key'] == 'year'), 'n/a')
                     enginesize = next(
@@ -123,6 +127,7 @@ def initial_request():
 
 # REQUEST ONLY BRANDS < 1000 VALS
 def direct_brand_request(offset=0):
+    print("Begin direct brand req")
     brand_list_rmn = []
     for val_brand in brand_id_list:
         for page in range(1, 25):
@@ -166,8 +171,11 @@ def direct_brand_request(offset=0):
                             if param['key'] == 'price':
                                 if param['value']['currency'] == 'EUR':
                                     price = param['value']['value']
-                                else:
-                                    price = round(param['value']['value'] * 0.20)
+                                elif param['value']['currency'] == 'RON':
+                                    if param['value']['converted_value']:
+                                        price = round(float(param['value']['converted_value']))
+                                    else:
+                                        price = round(float(param['value']['value'] * 0.20))
                         model = next((param['value']['label'] for param in params if param['key'] == 'model'), 'n/a')
                         year = next((int(param['value']['key']) for param in params if param['key'] == 'year'), 'n/a')
                         enginesize = next(
@@ -275,8 +283,11 @@ def region_request():
                             if param['key'] == 'price':
                                 if param['value']['currency'] == 'EUR':
                                     price = param['value']['value']
-                                else:
-                                    price = round(param['value']['value'] * 0.20)
+                                elif param['value']['currency'] == 'RON':
+                                    if param['value']['converted_value']:
+                                        price = round(float(param['value']['converted_value']))
+                                    else:
+                                        price = round(float(param['value']['value'] * 0.20))
                         model = next((param['value']['label'] for param in params if param['key'] == 'model'), 'n/a')
                         year = next((int(param['value']['key']) for param in params if param['key'] == 'year'), 'n/a')
                         enginesize = next(
@@ -359,8 +370,6 @@ def brand_region_request():
                         break
                     else:
                         if not data_dict_brand['data']:
-                            print(f"FINISHED---{get_keys_from_value(brand_id, val_brand1)}---"
-                                  f"{get_keys_from_value(region_id, val_region)}---")
                             break
 
                         for i in data_dict_brand['data']:
@@ -378,8 +387,11 @@ def brand_region_request():
                                 if param['key'] == 'price':
                                     if param['value']['currency'] == 'EUR':
                                         price = param['value']['value']
-                                    else:
-                                        price = round(param['value']['value'] * 0.20)
+                                    elif param['value']['currency'] == 'RON':
+                                        if param['value']['converted_value']:
+                                            price = round(float(param['value']['converted_value']))
+                                        else:
+                                            price = round(float(param['value']['value'] * 0.20))
                             model = next((param['value']['label'] for param in params if param['key'] == 'model'),
                                          'n/a')
                             year = next((int(param['value']['key']) for param in params if param['key'] == 'year'),
@@ -494,8 +506,11 @@ def color_brand_region_request():
                                     if param['key'] == 'price':
                                         if param['value']['currency'] == 'EUR':
                                             price = param['value']['value']
-                                        else:
-                                            price = round(param['value']['value'] * 0.20)
+                                        elif param['value']['currency'] == 'RON':
+                                            if param['value']['converted_value']:
+                                                price = round(float(param['value']['converted_value']))
+                                            else:
+                                                price = round(float(param['value']['value'] * 0.20))
                                 model = next((param['value']['label'] for param in params if param['key'] == 'model'),
                                              'n/a')
                                 year = next((int(param['value']['key']) for param in params if param['key'] == 'year'),
@@ -579,7 +594,6 @@ def chassis_color_brand_region_request():
                     try:
                         data_chassis = response.json()
                         if data_chassis['metadata']['total_elements'] == 1000:
-                            print("---NOT OK---")
                             break
                         elif data_chassis['metadata']['total_elements'] == 0:
                             break
@@ -601,8 +615,11 @@ def chassis_color_brand_region_request():
                                     if param['key'] == 'price':
                                         if param['value']['currency'] == 'EUR':
                                             price = param['value']['value']
-                                        else:
-                                            price = round(param['value']['value'] * 0.20)
+                                        elif param['value']['currency'] == 'RON':
+                                            if param['value']['converted_value']:
+                                                price = round(float(param['value']['converted_value']))
+                                            else:
+                                                price = round(float(param['value']['value'] * 0.20))
                                 model = next((param['value']['label'] for param in params if param['key'] == 'model'),
                                              'n/a')
                                 year = next((int(param['value']['key']) for param in params if param['key'] == 'year'),
@@ -664,9 +681,9 @@ if __name__ == '__main__':
     color_plus_brand_list, color_plus_list = color_brand_region_request()
     chassis_color_brand_region_request()
 
-    columns = ['Brand', 'Model', 'Titlu', 'Pret', 'Rulaj', 'AnFabr', 'Stare', 'Combustibil', 'Caroserie', 'Culoare', 'NrUsi', 'Transmisie', 'Volan',
-               'Cm3', 'URL', 'DataCreeare', 'Judet', 'Localitate']
+    columns = ['Brand', 'Model', 'Titlu', 'Pret', 'Rulaj', 'AnFabr', 'Stare', 'Combustibil', 'Caroserie', 'Culoare',
+               'NrUsi', 'Transmisie', 'Volan', 'Cm3', 'URL', 'DataCreeare', 'Judet', 'Localitate']
     df = pd.DataFrame(data_list, columns=columns)
     df = df.drop_duplicates()
     df = df.applymap(lambda x: x.encode('unicode_escape').decode('utf-8') if isinstance(x, str) else x)
-    df.to_excel('auto_data.xlsx', index=False)
+    df.to_excel(f'OLX_MOTO_{datetime.now().strftime("%d_%m_%y")}.xlsx', index=False)
