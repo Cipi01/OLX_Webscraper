@@ -1,18 +1,18 @@
 import pandas as pd
 import requests
-from dicts import get_county_ids, get_brand_id, get_color, get_chassis, get_auto_brands
-from funcs import get_keys_from_value
+from dicts import region_dict, brand_dict, brand_list, color_list, chassis_list
+
+from funcs import get_keys_from_value, process_data_item
 from datetime import datetime
 
-data_list = []
 
 URL = "https://www.olx.ro/api/v1/offers"
-region_id = get_county_ids()
+region_id = region_dict
 region_id_list = list(region_id.values())
-brand_id = get_brand_id()
+brand_id = brand_dict
 brand_id_list = list(brand_id.values())
-color_list = get_color()
-chassis_list = get_chassis()
+color_list = color_list
+chassis_list = chassis_list
 
 brd_reg_plus_dict = {}
 color_plus_brand_list = []
@@ -24,6 +24,8 @@ brd_color_plus_dict = {}
 
 
 def initial_request():
+    data_list = []
+    val_brand = []
     print("Begin init request")
     for page in range(1, 100):
         offset = 40 * page
@@ -62,71 +64,17 @@ def initial_request():
                 break
             else:
                 for i in data_dict['data']:
-
-                    title = i['title']
-                    brand_list = get_auto_brands()
-                    brand = 'n/a'
-                    for brd in brand_list:
-                        if brd.lower() in title.lower():
-                            brand = brd
-                            break
-
-                    params = i.get('params', [])
-                    for param in params:
-                        if param['key'] == 'price':
-                            if param['value']['currency'] == 'EUR':
-                                price = param['value']['value']
-                            elif param['value']['currency'] == 'RON':
-                                if param['value']['converted_value']:
-                                    price = round(float(param['value']['converted_value']))
-                                else:
-                                    price = round(float(param['value']['value'] * 0.20))
-                    model = next((param['value']['label'] for param in params if param['key'] == 'model'), 'n/a')
-                    year = next((int(param['value']['key']) for param in params if param['key'] == 'year'), 'n/a')
-                    enginesize = next(
-                        (int(param['value']['key']) for param in params if param['key'] == 'enginesize'),
-                        'n/a')
-                    km = next((int(param['value']['key']) for param in params if param['key'] == 'rulaj_pana'),
-                              'n/a')
-                    state = next((param['value']['label'] for param in params if param['key'] == 'state'), 'n/a')
-                    petrol = next((param['value']['label'] for param in params if param['key'] == 'petrol'), 'n/a')
-                    car_body = next((param['value']['label'] for param in params if param['key'] == 'car_body'), 'n/a')
-                    color = next((param['value']['label'] for param in params if param['key'] == 'color'), 'n/a')
-                    door_count = next((param['value']['label'] for param in params if param['key'] == 'door_count'),
-                                      'n/a')
-                    gearbox = next((param['value']['label'] for param in params if param['key'] == 'gearbox'), 'n/a')
-                    steering_wheel = next(
-                        (param['value']['label'] for param in params if param['key'] == 'steering_wheel'), 'n/a')
-                    created_time = i['created_time'].split('T')
-
-                    data_list.append([
-
-                        brand,
-                        model,
-                        title,
-                        price,
-                        km,
-                        year,
-                        state,
-                        petrol,
-                        car_body,
-                        color,
-                        door_count,
-                        gearbox,
-                        steering_wheel,
-                        enginesize,
-                        i['url'],
-                        created_time[0],
-                        i['location']['region']['name'],
-                        i['location']['city']['name'] if 'city' in i['location'] else 'n/a'
-                    ])
+                    data_list.append(process_data_item(i, val_brand, brand_id))
 
         except IndexError or KeyError:
             break
+    return data_list
 
 
 # REQUEST ONLY BRANDS < 1000 VALS
-def direct_brand_request(offset=0):
+def direct_brand_request(data_list, offset=0):
+    brand_s_list = []
+    brand_s_no_list = []
     print("Begin direct brand req")
     brand_list_rmn = []
     for val_brand in brand_id_list:
@@ -150,6 +98,8 @@ def direct_brand_request(offset=0):
             try:
                 if data_brand_direct['metadata']['total_elements'] == 1000:
                     brand_list_rmn.append(val_brand)
+                    brand_s_list.append(get_keys_from_value(brand_id, val_brand))
+                    brand_s_no_list.append(data_brand_direct['metadata']['visible_total_count'])
                     break
                 elif data_brand_direct['metadata']['total_elements'] == 0:
                     break
@@ -157,81 +107,25 @@ def direct_brand_request(offset=0):
                     if not data_brand_direct['data']:
                         break
                     for i in data_brand_direct['data']:
-
-                        title = i['title']
-                        if not val_brand:
-                            brand_list = get_auto_brands()
-                            brand = 'n/a'
-                            for brd in brand_list:
-                                if brd.lower() in title.lower():
-                                    brand = brd
-                                    break
-                        else:
-                            brand = get_keys_from_value(brand_id, val_brand)
-
-                        params = i.get('params', [])
-                        for param in params:
-                            if param['key'] == 'price':
-                                if param['value']['currency'] == 'EUR':
-                                    price = param['value']['value']
-                                elif param['value']['currency'] == 'RON':
-                                    if param['value']['converted_value']:
-                                        price = round(float(param['value']['converted_value']))
-                                    else:
-                                        price = round(float(param['value']['value'] * 0.20))
-                        model = next((param['value']['label'] for param in params if param['key'] == 'model'), 'n/a')
-                        year = next((int(param['value']['key']) for param in params if param['key'] == 'year'), 'n/a')
-                        enginesize = next(
-                            (int(param['value']['key']) for param in params if param['key'] == 'enginesize'),
-                            'n/a')
-                        km = next((int(param['value']['key']) for param in params if param['key'] == 'rulaj_pana'),
-                                  'n/a')
-                        state = next((param['value']['label'] for param in params if param['key'] == 'state'), 'n/a')
-                        petrol = next((param['value']['label'] for param in params if param['key'] == 'petrol'), 'n/a')
-                        car_body = next((param['value']['label'] for param in params if param['key'] == 'car_body'), 'n/a')
-                        color = next((param['value']['label'] for param in params if param['key'] == 'color'), 'n/a')
-                        door_count = next((param['value']['label'] for param in params if param['key'] == 'door_count'), 'n/a')
-                        gearbox = next((param['value']['label'] for param in params if param['key'] == 'gearbox'), 'n/a')
-                        steering_wheel = next((param['value']['label'] for param in params if param['key'] == 'steering_wheel'), 'n/a')
-                        created_time = i['created_time'].split('T')
-
-                        data_list.append([
-
-                            brand,
-                            model,
-                            title,
-                            price,
-                            km,
-                            year,
-                            state,
-                            petrol,
-                            car_body,
-                            color,
-                            door_count,
-                            gearbox,
-                            steering_wheel,
-                            enginesize,
-                            i['url'],
-                            created_time[0],
-                            i['location']['region']['name'],
-                            i['location']['city']['name'] if 'city' in i['location'] else 'n/a'
-                        ])
+                        data_list.append(process_data_item(i, val_brand, brand_id))
             except KeyError or IndexError:
                 break
-    return brand_list_rmn
+    brand_s_dict = {k: j for k, j in zip(brand_s_list, brand_s_no_list)}
+    return brand_list_rmn, data_list, brand_s_dict
 
 
 # REGIONS
-def region_request():
+def region_request(data_list):
+    val_brand = []
     print("begin counties")
-    for value_region1 in region_id_list:
+    for val_region in region_id_list:
         for page in range(1, 100):
             if page == 1:
                 offset = 0
             else:
                 offset += 40
 
-            querystring = {"offset": f"{offset}", "limit": "40", "category_id": "84", "region_id": f"{value_region1}",
+            querystring = {"offset": f"{offset}", "limit": "40", "category_id": "84", "region_id": f"{val_region}",
                            "filter_refiners": "spell_checker",
                            "sl": "1880c28a32ex6c06d152"}
 
@@ -262,7 +156,7 @@ def region_request():
             data_dict_region = response.json()
             try:
                 if data_dict_region['metadata']['total_elements'] == 1000:
-                    reg_plus_list.append(value_region1)
+                    reg_plus_list.append(val_region)
 
                     break
                 elif data_dict_region['metadata']['total_elements'] == 0:
@@ -272,84 +166,25 @@ def region_request():
                         break
 
                     for i in data_dict_region['data']:
-
-                        title = i['title']
-                        brand_list = get_auto_brands()
-                        brand = 'n/a'
-                        for brd in brand_list:
-                            if brd.lower() in title.lower():
-                                brand = brd
-                                break
-
-                        params = i.get('params', [])
-                        for param in params:
-                            if param['key'] == 'price':
-                                if param['value']['currency'] == 'EUR':
-                                    price = param['value']['value']
-                                elif param['value']['currency'] == 'RON':
-                                    if param['value']['converted_value']:
-                                        price = round(float(param['value']['converted_value']))
-                                    else:
-                                        price = round(float(param['value']['value'] * 0.20))
-                        model = next((param['value']['label'] for param in params if param['key'] == 'model'), 'n/a')
-                        year = next((int(param['value']['key']) for param in params if param['key'] == 'year'), 'n/a')
-                        enginesize = next(
-                            (int(param['value']['key']) for param in params if param['key'] == 'enginesize'),
-                            'n/a')
-                        km = next((int(param['value']['key']) for param in params if param['key'] == 'rulaj_pana'),
-                                  'n/a')
-                        state = next((param['value']['label'] for param in params if param['key'] == 'state'), 'n/a')
-                        petrol = next((param['value']['label'] for param in params if param['key'] == 'petrol'), 'n/a')
-                        car_body = next((param['value']['label'] for param in params if param['key'] == 'car_body'),
-                                        'n/a')
-                        color = next((param['value']['label'] for param in params if param['key'] == 'color'), 'n/a')
-                        door_count = next((param['value']['label'] for param in params if param['key'] == 'door_count'),
-                                          'n/a')
-                        gearbox = next((param['value']['label'] for param in params if param['key'] == 'gearbox'),
-                                       'n/a')
-                        steering_wheel = next(
-                            (param['value']['label'] for param in params if param['key'] == 'steering_wheel'), 'n/a')
-                        created_time = i['created_time'].split('T')
-
-                        data_list.append([
-
-                            brand,
-                            model,
-                            title,
-                            price,
-                            km,
-                            year,
-                            state,
-                            petrol,
-                            car_body,
-                            color,
-                            door_count,
-                            gearbox,
-                            steering_wheel,
-                            enginesize,
-                            i['url'],
-                            created_time[0],
-                            i['location']['region']['name'],
-                            i['location']['city']['name'] if 'city' in i['location'] else 'n/a'
-                        ])
+                        data_list.append(process_data_item(i, val_brand, brand_id))
             except KeyError or IndexError:
                 break
-    return reg_plus_list
+    return reg_plus_list, data_list
 
 
 # BRANDS TEMPORARY FIX
-def brand_region_request():
+def brand_region_request(data_list, region_rmn_list, brand_rmn_list):
     global val_reg_for_plus
-    print("Begin brands")
+    print("Begin brands reg")
     for val_region in region_rmn_list:
         brd_plus_list = []
-        for val_brand1 in brand_rmn_list:
+        for val_brand in brand_rmn_list:
             for page in range(1, 100):
                 if page == 1:
                     offset = 0
                 else:
                     offset += 40
-                url = f"https://www.olx.ro/api/v1/offers/?offset={offset}&limit=40&category_id={val_brand1}" \
+                url = f"https://www.olx.ro/api/v1/offers/?offset={offset}&limit=40&category_id={val_brand}" \
                       f"&region_id={val_region}&currency=EUR&page={page}&filter_refiners=spell_checker&sl=18844452377x208b1b88"
 
                 payload = {}
@@ -366,7 +201,7 @@ def brand_region_request():
                             brd_plus_list = []
                             val_reg_for_plus = val_region
 
-                        brd_plus_list.append(val_brand1)
+                        brd_plus_list.append(val_brand)
 
                         break
                     elif data_dict_brand['metadata']['total_elements'] == 0:
@@ -376,102 +211,34 @@ def brand_region_request():
                             break
 
                         for i in data_dict_brand['data']:
-
-                            title = i['title']
-                            if not val_brand1:
-                                brand_list = get_auto_brands()
-                                brand = 'n/a'
-                                for brd in brand_list:
-                                    if brd.lower() in title.lower():
-                                        brand = brd
-                                        break
-                            else:
-                                brand = get_keys_from_value(brand_id, val_brand1)
-
-                            params = i.get('params', [])
-                            for param in params:
-                                if param['key'] == 'price':
-                                    if param['value']['currency'] == 'EUR':
-                                        price = param['value']['value']
-                                    elif param['value']['currency'] == 'RON':
-                                        if param['value']['converted_value']:
-                                            price = round(float(param['value']['converted_value']))
-                                        else:
-                                            price = round(float(param['value']['value'] * 0.20))
-                            model = next((param['value']['label'] for param in params if param['key'] == 'model'),
-                                         'n/a')
-                            year = next((int(param['value']['key']) for param in params if param['key'] == 'year'),
-                                        'n/a')
-                            enginesize = next(
-                                (int(param['value']['key']) for param in params if param['key'] == 'enginesize'),
-                                'n/a')
-                            km = next((int(param['value']['key']) for param in params if param['key'] == 'rulaj_pana'),
-                                      'n/a')
-                            state = next((param['value']['label'] for param in params if param['key'] == 'state'),
-                                         'n/a')
-                            petrol = next((param['value']['label'] for param in params if param['key'] == 'petrol'),
-                                          'n/a')
-                            car_body = next((param['value']['label'] for param in params if param['key'] == 'car_body'),
-                                            'n/a')
-                            color = next((param['value']['label'] for param in params if param['key'] == 'color'),
-                                         'n/a')
-                            door_count = next(
-                                (param['value']['label'] for param in params if param['key'] == 'door_count'), 'n/a')
-                            gearbox = next((param['value']['label'] for param in params if param['key'] == 'gearbox'),
-                                           'n/a')
-                            steering_wheel = next(
-                                (param['value']['label'] for param in params if param['key'] == 'steering_wheel'),
-                                'n/a')
-                            created_time = i['created_time'].split('T')
-
-                            data_list.append([
-
-                                brand,
-                                model,
-                                title,
-                                price,
-                                km,
-                                year,
-                                state,
-                                petrol,
-                                car_body,
-                                color,
-                                door_count,
-                                gearbox,
-                                steering_wheel,
-                                enginesize,
-                                i['url'],
-                                created_time[0],
-                                i['location']['region']['name'],
-                                i['location']['city']['name'] if 'city' in i['location'] else 'n/a'
-                            ])
+                            data_list.append(process_data_item(i, val_brand, brand_id))
 
                     brd_reg_plus_dict[val_region] = brd_plus_list
                 except KeyError or IndexError:
                     break
 
-    return brd_reg_plus_dict
+    return brd_reg_plus_dict, data_list
 
 
 # COLORS
-def color_brand_region_request():
+def color_brand_region_request(data_list):
     cbr_brd_rmn = []
     cbr_color_rmn = []
     print("Begin colors")
     reg_rmn1 = brd_reg_plus_dict.keys()
-    for val_reg in reg_rmn1:
-        brand_list = brd_reg_plus_dict[val_reg]
-        for val_brd in brand_list:
-            for color in color_list:
+    for val_region in reg_rmn1:
+        brand_list = brd_reg_plus_dict[val_region]
+        for val_brand in brand_list:
+            for val_color in color_list:
                 for page in range(1, 100):
                     if page == 1:
                         offset = 0
                     else:
                         offset = page * 40
                     url = f"https://www.olx.ro/api/v1/offers/?offset={offset}" \
-                          f"&limit=40&category_id={val_brd}" \
-                          f"&region_id={val_reg}&currency=EUR&page={page}" \
-                          f"&filter_enum_color%5B0%5D={color}" \
+                          f"&limit=40&category_id={val_brand}" \
+                          f"&region_id={val_region}&currency=EUR&page={page}" \
+                          f"&filter_enum_color%5B0%5D={val_color}" \
                           f"&filter_refiners=spell_checker&sl=1880c28a32ex6c06d152"
 
                     payload = {}
@@ -484,8 +251,8 @@ def color_brand_region_request():
 
                     try:
                         if data_color['metadata']['total_elements'] == 1000:
-                            cbr_brd_rmn.append(val_brd)
-                            cbr_color_rmn.append(color)
+                            cbr_brd_rmn.append(val_brand)
+                            cbr_color_rmn.append(val_color)
                             break
 
                         elif data_color['metadata']['total_elements'] == 0:
@@ -498,86 +265,16 @@ def color_brand_region_request():
                                 break
 
                             for i in data_color['data']:
-
-                                title = i['title']
-                                if not val_brd:
-                                    brand_list = get_auto_brands()
-                                    brand = 'n/a'
-                                    for brd in brand_list:
-                                        if brd.lower() in title.lower():
-                                            brand = brd
-                                            break
-                                else:
-                                    brand = get_keys_from_value(brand_id, val_brd)
-
-                                params = i.get('params', [])
-                                for param in params:
-                                    if param['key'] == 'price':
-                                        if param['value']['currency'] == 'EUR':
-                                            price = param['value']['value']
-                                        elif param['value']['currency'] == 'RON':
-                                            if param['value']['converted_value']:
-                                                price = round(float(param['value']['converted_value']))
-                                            else:
-                                                price = round(float(param['value']['value'] * 0.20))
-                                model = next((param['value']['label'] for param in params if param['key'] == 'model'),
-                                             'n/a')
-                                year = next((int(param['value']['key']) for param in params if param['key'] == 'year'),
-                                            'n/a')
-                                enginesize = next(
-                                    (int(param['value']['key']) for param in params if param['key'] == 'enginesize'),
-                                    'n/a')
-                                km = next(
-                                    (int(param['value']['key']) for param in params if param['key'] == 'rulaj_pana'),
-                                    'n/a')
-                                state = next((param['value']['label'] for param in params if param['key'] == 'state'),
-                                             'n/a')
-                                petrol = next((param['value']['label'] for param in params if param['key'] == 'petrol'),
-                                              'n/a')
-                                car_body = next(
-                                    (param['value']['label'] for param in params if param['key'] == 'car_body'), 'n/a')
-                                color = next((param['value']['label'] for param in params if param['key'] == 'color'),
-                                             'n/a')
-                                door_count = next(
-                                    (param['value']['label'] for param in params if param['key'] == 'door_count'),
-                                    'n/a')
-                                gearbox = next(
-                                    (param['value']['label'] for param in params if param['key'] == 'gearbox'), 'n/a')
-                                steering_wheel = next(
-                                    (param['value']['label'] for param in params if param['key'] == 'steering_wheel'),
-                                    'n/a')
-                                created_time = i['created_time'].split('T')
-
-                                data_list.append([
-
-                                    brand,
-                                    model,
-                                    title,
-                                    price,
-                                    km,
-                                    year,
-                                    state,
-                                    petrol,
-                                    car_body,
-                                    color,
-                                    door_count,
-                                    gearbox,
-                                    steering_wheel,
-                                    enginesize,
-                                    i['url'],
-                                    created_time[0],
-                                    i['location']['region']['name'],
-                                    i['location']['city']['name'] if 'city' in i['location'] else 'n/a'
-                                ])
+                                data_list.append(process_data_item(i, val_brand, brand_id))
 
                     except IndexError or KeyError:
                         break
     print(cbr_brd_rmn, cbr_color_rmn)
-    return cbr_brd_rmn, cbr_color_rmn
+    return cbr_brd_rmn, cbr_color_rmn, data_list
 
 
 # CHASSIS
-def chassis_color_brand_region_request():
+def chassis_color_brand_region_request(data_list, color_plus_list):
     print("begin chassis")
     for val_brand in color_plus_brand_list:
         for val_color in color_plus_list:
@@ -610,92 +307,11 @@ def chassis_color_brand_region_request():
                             if not data_chassis['data']:
                                 break
                             for i in data_chassis['data']:
-
-                                title = i['title']
-                                if not val_brand:
-                                    brand_list = get_auto_brands()
-                                    brand = 'n/a'
-                                    for brd in brand_list:
-                                        if brd.lower() in title.lower():
-                                            brand = brd
-                                            break
-                                else:
-                                    brand = get_keys_from_value(brand_id, val_brand)
-
-                                params = i.get('params', [])
-                                for param in params:
-                                    if param['key'] == 'price':
-                                        if param['value']['currency'] == 'EUR':
-                                            price = param['value']['value']
-                                        elif param['value']['currency'] == 'RON':
-                                            if param['value']['converted_value']:
-                                                price = round(float(param['value']['converted_value']))
-                                            else:
-                                                price = round(float(param['value']['value'] * 0.20))
-                                model = next((param['value']['label'] for param in params if param['key'] == 'model'),
-                                             'n/a')
-                                year = next((int(param['value']['key']) for param in params if param['key'] == 'year'),
-                                            'n/a')
-                                enginesize = next(
-                                    (int(param['value']['key']) for param in params if param['key'] == 'enginesize'),
-                                    'n/a')
-                                km = next(
-                                    (int(param['value']['key']) for param in params if param['key'] == 'rulaj_pana'),
-                                    'n/a')
-                                state = next((param['value']['label'] for param in params if param['key'] == 'state'),
-                                             'n/a')
-                                petrol = next((param['value']['label'] for param in params if param['key'] == 'petrol'),
-                                              'n/a')
-                                car_body = next(
-                                    (param['value']['label'] for param in params if param['key'] == 'car_body'), 'n/a')
-                                color = next((param['value']['label'] for param in params if param['key'] == 'color'),
-                                             'n/a')
-                                door_count = next(
-                                    (param['value']['label'] for param in params if param['key'] == 'door_count'),
-                                    'n/a')
-                                gearbox = next(
-                                    (param['value']['label'] for param in params if param['key'] == 'gearbox'), 'n/a')
-                                steering_wheel = next(
-                                    (param['value']['label'] for param in params if param['key'] == 'steering_wheel'),
-                                    'n/a')
-                                created_time = i['created_time'].split('T')
-
-                                data_list.append([
-
-                                    brand,
-                                    model,
-                                    title,
-                                    price,
-                                    km,
-                                    year,
-                                    state,
-                                    petrol,
-                                    car_body,
-                                    color,
-                                    door_count,
-                                    gearbox,
-                                    steering_wheel,
-                                    enginesize,
-                                    i['url'],
-                                    created_time[0],
-                                    i['location']['region']['name'],
-                                    i['location']['city']['name'] if 'city' in i['location'] else 'n/a'
-                                ])
+                                data_list.append(process_data_item(i, val_brand, brand_id))
                     except IndexError or KeyError:
                         break
 
 
 if __name__ == '__main__':
     initial_request()
-    brand_rmn_list = direct_brand_request()
-    region_rmn_list = region_request()
-    b_r_rmn_dict = brand_region_request()
-    color_plus_brand_list, color_plus_list = color_brand_region_request()
-    chassis_color_brand_region_request()
 
-    columns = ['Brand', 'Model', 'Titlu', 'Pret', 'Rulaj', 'AnFabr', 'Stare', 'Combustibil', 'Caroserie', 'Culoare',
-               'NrUsi', 'Transmisie', 'Volan', 'Cm3', 'URL', 'DataCreeare', 'Judet', 'Localitate']
-    df = pd.DataFrame(data_list, columns=columns)
-    df = df.drop_duplicates()
-    df = df.applymap(lambda x: x.encode('unicode_escape').decode('utf-8') if isinstance(x, str) else x)
-    df.to_excel(f'OLX_MOTO_{datetime.now().strftime("%d_%m_%y")}.xlsx', index=False)
