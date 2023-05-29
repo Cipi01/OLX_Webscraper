@@ -159,12 +159,15 @@ def direct_brand_request(offset=0):
                     for i in data_brand_direct['data']:
 
                         title = i['title']
-                        brand_list = get_auto_brands()
-                        brand = 'n/a'
-                        for brd in brand_list:
-                            if brd.lower() in title.lower():
-                                brand = brd
-                                break
+                        if not val_brand:
+                            brand_list = get_auto_brands()
+                            brand = 'n/a'
+                            for brd in brand_list:
+                                if brd.lower() in title.lower():
+                                    brand = brd
+                                    break
+                        else:
+                            brand = get_keys_from_value(brand_id, val_brand)
 
                         params = i.get('params', [])
                         for param in params:
@@ -375,12 +378,15 @@ def brand_region_request():
                         for i in data_dict_brand['data']:
 
                             title = i['title']
-                            brand_list = get_auto_brands()
-                            brand = 'n/a'
-                            for brd in brand_list:
-                                if brd.lower() in title.lower():
-                                    brand = brd
-                                    break
+                            if not val_brand1:
+                                brand_list = get_auto_brands()
+                                brand = 'n/a'
+                                for brd in brand_list:
+                                    if brd.lower() in title.lower():
+                                        brand = brd
+                                        break
+                            else:
+                                brand = get_keys_from_value(brand_id, val_brand1)
 
                             params = i.get('params', [])
                             for param in params:
@@ -494,12 +500,15 @@ def color_brand_region_request():
                             for i in data_color['data']:
 
                                 title = i['title']
-                                brand_list = get_auto_brands()
-                                brand = 'n/a'
-                                for brd in brand_list:
-                                    if brd.lower() in title.lower():
-                                        brand = brd
-                                        break
+                                if not val_brd:
+                                    brand_list = get_auto_brands()
+                                    brand = 'n/a'
+                                    for brd in brand_list:
+                                        if brd.lower() in title.lower():
+                                            brand = brd
+                                            break
+                                else:
+                                    brand = get_keys_from_value(brand_id, val_brd)
 
                                 params = i.get('params', [])
                                 for param in params:
@@ -603,12 +612,15 @@ def chassis_color_brand_region_request():
                             for i in data_chassis['data']:
 
                                 title = i['title']
-                                brand_list = get_auto_brands()
-                                brand = 'n/a'
-                                for brd in brand_list:
-                                    if brd.lower() in title.lower():
-                                        brand = brd
-                                        break
+                                if not val_brand:
+                                    brand_list = get_auto_brands()
+                                    brand = 'n/a'
+                                    for brd in brand_list:
+                                        if brd.lower() in title.lower():
+                                            brand = brd
+                                            break
+                                else:
+                                    brand = get_keys_from_value(brand_id, val_brand)
 
                                 params = i.get('params', [])
                                 for param in params:
