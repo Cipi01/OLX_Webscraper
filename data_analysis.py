@@ -1,24 +1,34 @@
+import pandas as pd
 from openpyxl import load_workbook
+from openpyxl.styles import Alignment, Font
+from openpyxl.utils.dataframe import dataframe_to_rows
 
-book = load_workbook('OLX_MOTO_29_05_23.xlsx')
-ws_name = 'ws2'
-if ws_name not in book.wsnames:
-    book.create_ws(ws_name)
+df = pd.read_csv("D:/P/Webscrapers/BD/OLX_AUTO/CSV/OLX_MOTO_01_06_23.csv")
 
-ws = book[ws_name]
-ws['A1'] = 'Top 3 anunturi'
-ws.merge_cells('A1:C1')
+average_prices = df.groupby(['Brand', 'Model', 'AnFabr'])['Pret'].mean().round().reset_index()
+average_prices = average_prices.rename(columns={'Pret': 'AvgPret'})
+average_prices = average_prices[average_prices['Model'] != 'altul']
 
-ws['A2'] = 'Locul 1'
-ws['A3'] = 'Locul 2'
-ws['A4'] = 'Locul 3'
+xlsx_file = "OLX_MOTO_29_05_23.xlsx"
 
-ws['A1'] = df_surpl['Key'].iloc[0]
-ws['A2'] = df_surpl['Key'].iloc[1]
-ws['A3'] = df_surpl['Key'].iloc[2]
-ws['B1'] = df_surpl['Value'].iloc[0]
-ws['B2'] = df_surpl['Value'].iloc[1]
-ws['B3'] = df_surpl['Value'].iloc[2]
+book = load_workbook(xlsx_file)
+if 'test' not in book.sheetnames:
+    book.create_sheet('test')
 
-book.save('test.xlsx')
+sheet = book['test']
+sheet['A1'] = "TEST TEXT TO TEST"
+sheet.merge_cells('A1:Z1')
+sheet['A1'].alignment = Alignment(horizontal='left')
+sheet['A1'].font = Font(bold=True)
+start_row = 3
 
+headers = list(average_prices.columns)
+for col_num, header in enumerate(headers, 1):
+    cell = sheet.cell(row=start_row, column=col_num)
+    cell.value = header
+    cell.alignment = Alignment(horizontal='center')
+    cell.font = Font(bold=True)
+
+for row in dataframe_to_rows(average_prices, index=False, header=False):
+    sheet.append(row)
+book.save(xlsx_file)
