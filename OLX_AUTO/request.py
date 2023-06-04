@@ -1,9 +1,7 @@
-import pandas as pd
 import requests
-from dicts import region_dict, brand_dict, brand_list, color_list, chassis_list
+from dicts import region_dict, brand_dict, color_list, chassis_list
 
-from funcs import get_keys_from_value, process_data_item
-from datetime import datetime
+from funcs import get_keys_from_value, process_data_item_auto
 
 
 URL = "https://www.olx.ro/api/v1/offers"
@@ -64,7 +62,7 @@ def initial_request():
                 break
             else:
                 for i in data_dict['data']:
-                    data_list.append(process_data_item(i, val_brand, brand_id))
+                    data_list.append(process_data_item_auto(i, val_brand, brand_id))
 
         except IndexError or KeyError:
             break
@@ -107,7 +105,7 @@ def direct_brand_request(data_list, offset=0):
                     if not data_brand_direct['data']:
                         break
                     for i in data_brand_direct['data']:
-                        data_list.append(process_data_item(i, val_brand, brand_id))
+                        data_list.append(process_data_item_auto(i, val_brand, brand_id))
             except KeyError or IndexError:
                 break
     brand_s_dict = {k: j for k, j in zip(brand_s_list, brand_s_no_list)}
@@ -166,7 +164,7 @@ def region_request(data_list):
                         break
 
                     for i in data_dict_region['data']:
-                        data_list.append(process_data_item(i, val_brand, brand_id))
+                        data_list.append(process_data_item_auto(i, val_brand, brand_id))
             except KeyError or IndexError:
                 break
     return reg_plus_list, data_list
@@ -211,7 +209,7 @@ def brand_region_request(data_list, region_rmn_list, brand_rmn_list):
                             break
 
                         for i in data_dict_brand['data']:
-                            data_list.append(process_data_item(i, val_brand, brand_id))
+                            data_list.append(process_data_item_auto(i, val_brand, brand_id))
 
                     brd_reg_plus_dict[val_region] = brd_plus_list
                 except KeyError or IndexError:
@@ -265,7 +263,7 @@ def color_brand_region_request(data_list):
                                 break
 
                             for i in data_color['data']:
-                                data_list.append(process_data_item(i, val_brand, brand_id))
+                                data_list.append(process_data_item_auto(i, val_brand, brand_id))
 
                     except IndexError or KeyError:
                         break
@@ -307,10 +305,10 @@ def chassis_color_brand_region_request(data_list, color_plus_list):
                             if not data_chassis['data']:
                                 break
                             for i in data_chassis['data']:
-                                data_list.append(process_data_item(i, val_brand, brand_id))
+                                data_list.append(process_data_item_auto(i, val_brand, brand_id))
                     except IndexError or KeyError:
                         break
-
+    return data_list
 
 if __name__ == '__main__':
     initial_request()

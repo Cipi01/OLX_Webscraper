@@ -22,7 +22,7 @@ sheet['A1'].alignment = Alignment(horizontal='left')
 sheet['A1'].font = Font(bold=True)
 start_row = 3
 
-headers = list(average_prices.columns)
+headers = list(average_prices.columns_auto)
 for col_num, header in enumerate(headers, 1):
     cell = sheet.cell(row=start_row, column=col_num)
     cell.value = header

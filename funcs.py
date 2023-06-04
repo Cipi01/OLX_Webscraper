@@ -1,4 +1,5 @@
-from dicts import brand_list
+from dicts import brand_list_auto, brand_list_moto
+from unidecode import unidecode
 
 
 def get_keys_from_value(d, val):
@@ -6,12 +7,13 @@ def get_keys_from_value(d, val):
     return lst[0]
 
 
-def process_data_item(item, val_brand=None, brand_id=None):
+def process_data_item_auto(item, val_brand=None, brand_id=None):
     global price
     title = item['title']
+    title_normalized = unidecode(title)
     if not val_brand:
         brand = 'n/a'
-        for brd in brand_list:
+        for brd in brand_list_auto:
             if brd.lower() in title.lower():
                 brand = brd
                 break
@@ -44,7 +46,7 @@ def process_data_item(item, val_brand=None, brand_id=None):
     return [
         brand,
         model,
-        title,
+        title_normalized,
         price,
         km,
         year,
@@ -55,6 +57,45 @@ def process_data_item(item, val_brand=None, brand_id=None):
         door_count,
         gearbox,
         steering_wheel,
+        enginesize,
+        item['url'],
+        created_time[0],
+        item['location']['region']['name'],
+        item['location']['city']['name'] if 'city' in item['location'] else 'n/a'
+    ]
+
+
+def process_data_item_moto(item):
+    global price
+    title = item['title']
+    title_normalized = unidecode(title)
+    brand = 'n/a'
+    for brd in brand_list_moto:
+        if brd.lower() in title.lower():
+            brand = brd
+            break
+
+    params = item.get('params', [])
+    for param in params:
+        if param['key'] == 'price':
+            if param['value']['currency'] == 'EUR':
+                price = param['value']['value']
+            elif param['value']['currency'] == 'RON':
+                if param['value']['converted_value']:
+                    price = round(float(param['value']['converted_value']))
+                else:
+                    price = round(float(param['value']['value'] * 0.20))
+    year = next((int(param['value']['key']) for param in params if param['key'] == 'year'), 'n/a')
+    enginesize = next((int(param['value']['key']) for param in params if param['key'] == 'enginesize'), 'n/a')
+    state = next((param['value']['label'] for param in params if param['key'] == 'state'), 'n/a')
+    created_time = item['created_time'].split('T')
+
+    return [
+        brand,
+        title_normalized,
+        price,
+        year,
+        state,
         enginesize,
         item['url'],
         created_time[0],
