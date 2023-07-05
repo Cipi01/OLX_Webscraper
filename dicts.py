@@ -250,9 +250,9 @@ color_list = ['white', 'black', 'gray', 'silver', 'blue', 'red', 'green', 'gold'
 chassis_list = ['cabriolet', 'sedan', 'coupe', 'pickup', 'suv', 'hatchback', 'minibus', 'estate-car',
                 'off-road-vehicle', 'mvp']
 
-columns_auto = ['Brand', 'Model', 'Titlu', 'Pret', 'Rulaj', 'AnFabr', 'Stare', 'Combustibil', 'Caroserie', 'Culoare',
+columns_auto = ['ProdId', 'Brand', 'Model', 'Titlu', 'Pret', 'Rulaj', 'AnFabr', 'Stare', 'Combustibil', 'Caroserie', 'Culoare',
                 'NrUsi', 'Transmisie', 'Volan', 'Cm3', 'URL', 'DataCreeare', 'Judet', 'Localitate']
 
-columns_moto = ['Brand', 'Titlu', 'Pret', 'AnFabr', 'Stare', 'Cm3', 'URL', 'DataCreeare', 'Judet', 'Localitate']
+columns_moto = ['ProdId', 'Brand', 'Titlu', 'Pret', 'AnFabr', 'Stare', 'Cm3', 'URL', 'DataCreeare', 'Judet', 'Localitate']
 if __name__ == '__main__':
     print('a')

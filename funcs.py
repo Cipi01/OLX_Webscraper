@@ -9,6 +9,7 @@ def get_keys_from_value(d, val):
 
 def process_data_item_auto(item, val_brand=None, brand_id=None):
     global price
+    prod_id = item['id']
     title = item['title']
     title_normalized = unidecode(title)
     if not val_brand:
@@ -44,6 +45,7 @@ def process_data_item_auto(item, val_brand=None, brand_id=None):
     created_time = item['created_time'].split('T')
 
     return [
+        prod_id,
         brand,
         model,
         title_normalized,
@@ -67,6 +69,7 @@ def process_data_item_auto(item, val_brand=None, brand_id=None):
 
 def process_data_item_moto(item):
     global price
+    prod_id = item['id']
     title = item['title']
     title_normalized = unidecode(title)
     brand = 'n/a'
@@ -91,6 +94,7 @@ def process_data_item_moto(item):
     created_time = item['created_time'].split('T')
 
     return [
+        prod_id,
         brand,
         title_normalized,
         price,
