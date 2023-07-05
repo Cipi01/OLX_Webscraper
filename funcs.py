@@ -1,6 +1,6 @@
 from dicts import brand_list_auto, brand_list_moto
 from unidecode import unidecode
-
+import datetime
 
 def get_keys_from_value(d, val):
     lst = [k for k, v in d.items() if v == val]
@@ -43,6 +43,7 @@ def process_data_item_auto(item, val_brand=None, brand_id=None):
     gearbox = next((param['value']['label'] for param in params if param['key'] == 'gearbox'), 'n/a')
     steering_wheel = next((param['value']['label'] for param in params if param['key'] == 'steering_wheel'), 'n/a')
     created_time = item['created_time'].split('T')
+    scraped_time = datetime.datetime.now().strftime("%d:%m:%y")
 
     return [
         prod_id,
@@ -63,7 +64,8 @@ def process_data_item_auto(item, val_brand=None, brand_id=None):
         item['url'],
         created_time[0],
         item['location']['region']['name'],
-        item['location']['city']['name'] if 'city' in item['location'] else 'n/a'
+        item['location']['city']['name'] if 'city' in item['location'] else 'n/a',
+        scraped_time
     ]
 
 
@@ -92,6 +94,7 @@ def process_data_item_moto(item):
     enginesize = next((int(param['value']['key']) for param in params if param['key'] == 'enginesize'), 'n/a')
     state = next((param['value']['label'] for param in params if param['key'] == 'state'), 'n/a')
     created_time = item['created_time'].split('T')
+    scraped_time = datetime.datetime.now().strftime("%d:%m:%y")
 
     return [
         prod_id,
@@ -104,7 +107,9 @@ def process_data_item_moto(item):
         item['url'],
         created_time[0],
         item['location']['region']['name'],
-        item['location']['city']['name'] if 'city' in item['location'] else 'n/a'
+        item['location']['city']['name'] if 'city' in item['location'] else 'n/a',
+        scraped_time
+
     ]
 
 

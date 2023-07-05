@@ -251,8 +251,8 @@ chassis_list = ['cabriolet', 'sedan', 'coupe', 'pickup', 'suv', 'hatchback', 'mi
                 'off-road-vehicle', 'mvp']
 
 columns_auto = ['ProdId', 'Brand', 'Model', 'Titlu', 'Pret', 'Rulaj', 'AnFabr', 'Stare', 'Combustibil', 'Caroserie', 'Culoare',
-                'NrUsi', 'Transmisie', 'Volan', 'Cm3', 'URL', 'DataCreeare', 'Judet', 'Localitate']
+                'NrUsi', 'Transmisie', 'Volan', 'Cm3', 'URL', 'DataCreeare', 'Judet', 'Localitate', 'ScrapedTime']
 
-columns_moto = ['ProdId', 'Brand', 'Titlu', 'Pret', 'AnFabr', 'Stare', 'Cm3', 'URL', 'DataCreeare', 'Judet', 'Localitate']
+columns_moto = ['ProdId', 'Brand', 'Titlu', 'Pret', 'AnFabr', 'Stare', 'Cm3', 'URL', 'DataCreeare', 'Judet', 'Localitate','ScrapedTime']
 if __name__ == '__main__':
     print('a')
