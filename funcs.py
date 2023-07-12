@@ -1,6 +1,12 @@
+import glob
+import os
+
+import pandas as pd
+
 from dicts import brand_list_auto, brand_list_moto
 from unidecode import unidecode
 import datetime
+
 
 def get_keys_from_value(d, val):
     lst = [k for k, v in d.items() if v == val]
@@ -9,7 +15,6 @@ def get_keys_from_value(d, val):
 
 def process_data_item_auto(item, val_brand=None, brand_id=None):
     global price
-    prod_id = item['id']
     title = item['title']
     title_normalized = unidecode(title)
     if not val_brand:
@@ -46,7 +51,6 @@ def process_data_item_auto(item, val_brand=None, brand_id=None):
     scraped_time = datetime.datetime.now().strftime("%d:%m:%y")
 
     return [
-        prod_id,
         brand,
         model,
         title_normalized,
@@ -71,7 +75,6 @@ def process_data_item_auto(item, val_brand=None, brand_id=None):
 
 def process_data_item_moto(item):
     global price
-    prod_id = item['id']
     title = item['title']
     title_normalized = unidecode(title)
     brand = 'n/a'
@@ -97,7 +100,6 @@ def process_data_item_moto(item):
     scraped_time = datetime.datetime.now().strftime("%d:%m:%y")
 
     return [
-        prod_id,
         brand,
         title_normalized,
         price,
@@ -111,6 +113,21 @@ def process_data_item_moto(item):
         scraped_time
 
     ]
+
+
+def unique_col_inserter(bd_path, df):
+    csv_dir = f"D:/P/Webscrapers/BD/{bd_path}"
+    list_of_files = glob.glob(f"{csv_dir}/*.csv")
+    latest_file = max(list_of_files, key=os.path.getctime)
+    prev_df = pd.read_csv(latest_file)
+
+    if 'UniqueID' in prev_df.columns:
+        last_row = prev_df.tail(1)
+        highest_id = last_row['UniqueID'].values[0]
+        start_index = highest_id + 1
+    else:
+        start_index = 1
+    df.insert(0, 'UniqueID', range(start_index, start_index + len(df)))
 
 
 if __name__ == '__main__':
