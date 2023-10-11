@@ -28,4 +28,4 @@ def run_auto():
     df = pd.DataFrame(data_list, columns=columns_auto)
     df = df.drop_duplicates()
     unique_col_inserter("OLX_AUTO", df)
-    df.to_csv(f"D:/P/Webscrapers/BD/OLX_AUTO/OLX_AUTO_{DATE}.csv", index=False)
+    df.to_csv(f"D:/P/Webscrapers/BD/OLX_AUTO1/OLX_AUTO_{DATE}.csv", index=False)
